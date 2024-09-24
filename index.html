@@ -30,29 +30,12 @@
             background-color: #f2f2f2;
         }
     </style>
-    
-    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore.js"></script>
     <script>
-        const firebaseConfig = {
-  apiKey: "AIzaSyDeL9-M20pw_o2Y2jdM4LsQsTeXAWNwP5I",
-  authDomain: "dream-c0b1a.firebaseapp.com",
-  projectId: "dream-c0b1a",
-  storageBucket: "dream-c0b1a.appspot.com",
-  messagingSenderId: "372005272602",
-  appId: "1:372005272602:web:33c8acfb90472ee8f9e5a3"
-        };
-
-        // Firebase 초기화
-        const app = firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore();
+        let records = JSON.parse(localStorage.getItem("records")) || []; // Local Storage에서 기록 불러오기
 
         function toggleRecord() {
             const recordDiv = document.getElementById("record");
             recordDiv.style.display = recordDiv.style.display === "none" ? "block" : "none";
-            if (recordDiv.style.display === "block") {
-                fetchRecords(); // 기록을 불러옵니다
-            }
         }
 
         function updateOptions() {
@@ -124,19 +107,12 @@
 
             // 산출 기록 저장
             const record = { dateTime, creator: creatorName, player: playerName, item, waterSum, weedSum, total, stars, waterValues, weedValues };
-            saveRecord(record);
+            records.push(record);
+            localStorage.setItem("records", JSON.stringify(records)); // Local Storage에 기록 저장
+            updateRecordDisplay();
         }
 
-        async function saveRecord(record) {
-            try {
-                await db.collection("records").add(record); // Firestore에 기록 추가
-                fetchRecords(); // 기록을 다시 불러옵니다
-            } catch (error) {
-                console.error("Error adding document: ", error);
-            }
-        }
-
-        async function fetchRecords() {
+        function updateRecordDisplay() {
             const recordDiv = document.getElementById("record");
             recordDiv.innerHTML = ""; // 기존 기록 제거
 
@@ -146,10 +122,7 @@
             headerRow.innerHTML = "<th>날짜 및 시간</th><th>산출자</th><th>플레이어</th><th>작물</th><th>물주기 합계</th><th>잡초뽑기 합계</th><th>총합</th><th>결과</th><th>물주기 값</th><th>잡초뽑기 값</th>";
             table.appendChild(headerRow);
 
-            // Firestore에서 기록 불러오기
-            const snapshot = await db.collection("records").get();
-            snapshot.forEach(doc => {
-                const record = doc.data();
+            records.forEach(record => {
                 const row = document.createElement("tr");
                 row.innerHTML = `<td>${record.dateTime}</td><td>${record.creator}</td><td>${record.player}</td><td>${record.item}</td><td>${record.waterSum}</td><td>${record.weedSum}</td><td>${record.total}</td><td>${record.stars}</td><td>${record.waterValues.join(", ")}</td><td>${record.weedValues.join(", ")}</td>`;
                 table.appendChild(row);
@@ -158,8 +131,9 @@
             recordDiv.appendChild(table);
         }
 
-        // 페이지 로드 시 기본 선택 항목 업데이트
+        // 페이지 로드 시 기록과 기본 선택 항목 업데이트
         window.onload = function() {
+            updateRecordDisplay(); // 저장된 기록 표시
             updateOptions(); // 기본 선택 항목 업데이트
         };
     </script>
