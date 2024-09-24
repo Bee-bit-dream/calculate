@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>감자와 호박 산출기</title>
+    <title>농작물 계산기</title>
     <style>
         #record {
             display: none; /* 기본적으로 숨김 */
@@ -42,15 +42,31 @@
             const item = document.getElementById("item").value;
             const waterSelect = document.getElementById("water");
             const weedSelect = document.getElementById("weed");
+            const fertilizerSelect = document.getElementById("fertilizer");
+            const nutrientSelect = document.getElementById("nutrient");
+            const weatherSelects = document.querySelectorAll(".weather-select");
 
-            // 선택 항목에 따라 물주기와 잡초뽑기 옵션 업데이트
-            if (item === "감자") {
-                updateSelect(waterSelect, 5);
-                updateSelect(weedSelect, 5);
-            } else if (item === "호박") {
-                updateSelect(waterSelect, 7);
-                updateSelect(weedSelect, 7);
+            // 선택 항목에 따라 물주기와 잡초뽑기, 비료, 영양제 옵션 업데이트
+            let maxWater, maxWeed, maxFertilizer;
+            if (item === "오이") {
+                maxWater = maxWeed = maxFertilizer = 2;
+            } else if (item === "순무") {
+                maxWater = maxWeed = maxFertilizer = 3;
+            } else if (item === "비트") {
+                maxWater = 4; maxWeed = maxFertilizer = 3;
+            } else if (item === "당근" || item === "토마토") {
+                maxWater = maxWeed = maxFertilizer = 4;
+            } else if (item === "감자") {
+                maxWater = maxWeed = maxFertilizer = 5;
             }
+
+            updateSelect(waterSelect, maxWater);
+            updateSelect(weedSelect, maxWeed);
+            updateSelect(fertilizerSelect, maxFertilizer);
+            updateSelect(nutrientSelect, 2);
+
+            // 날씨 옵션 업데이트
+            weatherSelects.forEach(select => updateSelect(select, maxFertilizer));
         }
 
         function updateSelect(selectElement, max) {
@@ -67,6 +83,9 @@
             const item = document.getElementById("item").value;
             const waterCount = parseInt(document.getElementById("water").value);
             const weedCount = parseInt(document.getElementById("weed").value);
+            const fertilizerCount = parseInt(document.getElementById("fertilizer").value);
+            const nutrientCount = parseInt(document.getElementById("nutrient").value);
+            const weatherCounts = Array.from(document.querySelectorAll(".weather-select")).map(select => parseInt(select.value));
             const playerName = document.getElementById("player").value;
             const creatorName = document.getElementById("creator").value;
 
@@ -87,26 +106,117 @@
                 weedValues.push(value); // 랜덤 값을 저장
             }
 
-            const total = waterSum + weedSum;
+            // 날씨에 따른 수정 값
+            let weatherSum = 0;
+            weatherCounts.forEach((count, index) => {
+                if (index === 0) { // 맑음
+                    weatherSum += count * 10;
+                } else { // 흐림 및 번개
+                    weatherSum -= count * 10;
+                }
+            });
+
+            // 비료 및 영양제 값 계산
+            let nutrientSum = nutrientCount * 5;
+            let total = waterSum + weedSum + weatherSum + nutrientSum;
+
+            // 별 등급 및 피스 계산
+            let stars, pieces;
+
+            if (item === "오이") {
+                if (total <= 40) {
+                    stars = "⭐️"; pieces = 300;
+                } else if (total <= 55) {
+                    stars = "⭐️⭐️"; pieces = 330;
+                } else if (total <= 80) {
+                    stars = "⭐️⭐️⭐️"; pieces = 360;
+                } else {
+                    stars = "❤️"; pieces = 390;
+                }
+            } else if (item === "순무") {
+                if (total <= 60) {
+                    stars = "⭐️"; pieces = 400;
+                } else if (total <= 110) {
+                    stars = "⭐️⭐️"; pieces = 440;
+                } else if (total <= 150) {
+                    stars = "⭐️⭐️⭐️"; pieces = 480;
+                } else {
+                    stars = "❤️"; pieces = 520;
+                }
+            } else if (item === "비트") {
+                if (total <= 50) {
+                    stars = "⭐️"; pieces = 400;
+                } else if (total <= 100) {
+                    stars = "⭐️⭐️"; pieces = 440;
+                } else if (total <= 140) {
+                    stars = "⭐️⭐️⭐️"; pieces = 480;
+                } else {
+                    stars = "❤️"; pieces = 520;
+                }
+            } else if (item === "당근") {
+                if (total <= 60) {
+                    stars = "⭐️"; pieces = 480;
+                } else if (total <= 115) {
+                    stars = "⭐️⭐️"; pieces = 510;
+                } else if (total <= 160) {
+                    stars = "⭐️⭐️⭐️"; pieces = 540;
+                } else {
+                    stars = "❤️"; pieces = 570;
+                }
+                // 30% 확률로 거대당근 출력
+                if (Math.random() < 0.3) {
+                    stars = "🥕 거대당근"; pieces = 1440;
+                }
+            } else if (item === "토마토") {
+                if (total <= 60) {
+                    stars = "⭐️"; pieces = 500;
+                } else if (total <= 115) {
+                    stars = "⭐️⭐️"; pieces = 525;
+                } else if (total <= 160) {
+                    stars = "⭐️⭐️⭐️"; pieces = 550;
+                } else {
+                    stars = "❤️"; pieces = 600;
+                }
+                // 30% 확률로 동일 값 출력
+                if (Math.random() < 0.3) {
+                    pieces = 600;
+                }
+            } else if (item === "감자") {
+                if (total <= 80) {
+                    stars = "⭐️"; pieces = 400 * 2; // 두 개
+                } else if (total <= 145) {
+                    stars = "⭐️⭐️"; pieces = 500 * 2; // 두 개
+                } else if (total <= 190) {
+                    stars = "⭐️⭐️⭐️"; pieces = 600 * 2; // 두 개
+                } else {
+                    stars = "❤️"; pieces = 700 * 2; // 두 개
+                }
+            }
 
             // 현재 날짜 및 시간 가져오기
             const now = new Date();
             const dateTime = now.toLocaleString(); // "YYYY/MM/DD HH:MM:SS" 형식
 
             // 간단한 결괏값 출력
-            document.getElementById("result").innerText = `물주기 합계: ${waterSum}, 잡초뽑기 합계: ${weedSum}`;
-            
-            // 🌟 결과 계산
-            let stars = "🌟";
-            if (total > 200) {
-                stars = "🌟🌟🌟";
-            } else if (total > 100) {
-                stars = "🌟🌟";
-            }
-            document.getElementById("finalResult").innerText = `결과: ${stars}`;
+            document.getElementById("result").innerText = `물주기 합계: ${waterSum}, 잡초뽑기 합계: ${weedSum}, 비료: ${fertilizerCount}, 영양제: ${nutrientSum}, 날씨 보너스: ${weatherSum}`;
+            document.getElementById("finalResult").innerText = `결과: ${stars}, 보상: ${pieces}피스`;
 
             // 산출 기록 저장
-            const record = { dateTime, creator: creatorName, player: playerName, item, waterSum, weedSum, total, stars, waterValues, weedValues };
+            const record = {
+                dateTime,
+                creator: creatorName,
+                player: playerName,
+                item,
+                waterSum,
+                weedSum,
+                nutrientSum,
+                fertilizerCount,
+                total,
+                stars,
+                pieces,
+                waterValues,
+                weedValues
+            };
             records.push(record);
             localStorage.setItem("records", JSON.stringify(records)); // Local Storage에 기록 저장
             updateRecordDisplay();
@@ -119,12 +229,12 @@
             // 표 생성
             const table = document.createElement("table");
             const headerRow = document.createElement("tr");
-            headerRow.innerHTML = "<th>날짜 및 시간</th><th>산출자</th><th>플레이어</th><th>작물</th><th>물주기 합계</th><th>잡초뽑기 합계</th><th>총합</th><th>결과</th><th>물주기 값</th><th>잡초뽑기 값</th>";
+            headerRow.innerHTML = "<th>날짜 및 시간</th><th>산출자</th><th>플레이어</th><th>작물</th><th>물주기 합계</th><th>잡초뽑기 합계</th><th>영양제 합계</th><th>비료 횟수</th><th>총합</th><th>결과</th><th>물주기 값</th><th>잡초뽑기 값</th>";
             table.appendChild(headerRow);
 
             records.forEach(record => {
                 const row = document.createElement("tr");
-                row.innerHTML = `<td>${record.dateTime}</td><td>${record.creator}</td><td>${record.player}</td><td>${record.item}</td><td>${record.waterSum}</td><td>${record.weedSum}</td><td>${record.total}</td><td>${record.stars}</td><td>${record.waterValues.join(", ")}</td><td>${record.weedValues.join(", ")}</td>`;
+                row.innerHTML = `<td>${record.dateTime}</td><td>${record.creator}</td><td>${record.player}</td><td>${record.item}</td><td>${record.waterSum}</td><td>${record.weedSum}</td><td>${record.nutrientSum}</td><td>${record.fertilizerCount}</td><td>${record.total}</td><td>${record.stars}</td><td>${record.waterValues.join(", ")}</td><td>${record.weedValues.join(", ")}</td>`;
                 table.appendChild(row);
             });
 
@@ -139,7 +249,7 @@
     </script>
 </head>
 <body>
-    <h1>감자와 호박 산출기</h1>
+    <h1>농작물 계산기</h1>
 
     <label for="creator">산출자:</label>
     <input type="text" id="creator" placeholder="산출자 이름을 입력하세요">
@@ -151,20 +261,55 @@
 
     <label for="item">작물 선택:</label>
     <select id="item" onchange="updateOptions()">
+        <option value="오이">오이</option>
+        <option value="순무">순무</option>
+        <option value="비트">비트</option>
+        <option value="당근">당근</option>
+        <option value="토마토">토마토</option>
         <option value="감자">감자</option>
-        <option value="호박">호박</option>
     </select>
     <br><br>
 
-    <label for="water">물주기 횟수 선택:</label>
+    <label for="water">물 주기 횟수 선택:</label>
     <select id="water">
         <!-- 업데이트를 위해 비워둠 -->
     </select>
     <br><br>
 
-    <label for="weed">잡초뽑기 횟수 선택:</label>
+    <label for="weed">잡초 뽑기 횟수 선택:</label>
     <select id="weed">
         <!-- 업데이트를 위해 비워둠 -->
+    </select>
+    <br><br>
+
+    <label for="fertilizer">비료 횟수 선택:</label>
+    <select id="fertilizer">
+        <!-- 업데이트를 위해 비워둠 -->
+    </select>
+    <br><br>
+
+    <label for="nutrient">영양제 횟수 선택:</label>
+    <select id="nutrient">
+        <!-- 업데이트를 위해 비워둠 -->
+    </select>
+    <br><br>
+
+    <h3>날씨 선택:</h3>
+    <label for="weather-sunny">맑음:</label>
+    <select class="weather-select" id="weather-sunny">
+        <!-- 날씨 선택을 위해 비워둠 -->
+    </select>
+    <br><br>
+
+    <label for="weather-cloudy">흐림:</label>
+    <select class="weather-select" id="weather-cloudy">
+        <!-- 날씨 선택을 위해 비워둠 -->
+    </select>
+    <br><br>
+
+    <label for="weather-thunder">번개:</label>
+    <select class="weather-select" id="weather-thunder">
+        <!-- 날씨 선택을 위해 비워둠 -->
     </select>
     <br><br>
 
