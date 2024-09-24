@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>날씨 계산기</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        th, td {
+            border: 1px solid #ccc;
+            padding: 8px;
+            text-align: center;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        #result {
+            margin-top: 20px;
+        }
+        label {
+            display: block;
+            margin: 10px 0 5px 0;
+        }
+        select, input[type="number"] {
+            width: 100%;
+            padding: 10px;
+            font-size: 16px;
+            margin-bottom: 20px; /* 위 아래 마진 추가 */
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+        }
+    </style>
+        <a href="index.html">작물 페이지로 돌아가기</a>
+    <script>
+        function calculateWeather() {
+            const dayValues = {
+                "2일차": { base: 40, weather: "맑음" },
+                "3일차": { base: 40, weather: "맑음" },
+                "4일차": { base: 15, weather: "비" },
+                "5일차": { base: 15, weather: "흐림" },
+                "6일차": { base: 15, weather: "안개" },
+                "7일차": { base: 40, weather: "맑음" },
+                "8일차": { base: 15, weather: "번개" },
+                "9일차": { base: 40, weather: "맑음" },
+                "10일차": { base: 15, weather: "번개" },
+            };
+
+            const day = document.getElementById("day").value;
+            const sunnyCount = parseInt(document.getElementById("sunny").value);
+            const cloudyCount = parseInt(document.getElementById("cloudy").value);
+            const drizzleCount = parseInt(document.getElementById("drizzle").value);
+            const thunderCount = parseInt(document.getElementById("thunder").value);
+            const fogCount = parseInt(document.getElementById("fog").value);
+
+            const baseValues = dayValues[day];
+            let probabilities = {
+                "맑음": baseValues.base + sunnyCount,
+                "흐림": 15 + cloudyCount,
+                "비": 15 + drizzleCount,
+                "번개": 15 + thunderCount,
+                "안개": 15 + fogCount,
+            };
+
+            const total = Object.values(probabilities).reduce((a, b) => a + b, 0);
+
+            // 결과 확률 계산
+            const resultProbabilities = {};
+            for (let [key, value] of Object.entries(probabilities)) {
+                resultProbabilities[key] = ((value / total) * 100).toFixed(2);
+            }
+
+            // 룰렛 방식으로 결과 결정
+            const rand = Math.random() * 100;
+            let cumulative = 0;
+            let finalResult = "";
+
+            for (let [key, value] of Object.entries(resultProbabilities)) {
+                cumulative += parseFloat(value);
+                if (rand <= cumulative) {
+                    finalResult = key;
+                    break;
+                }
+            }
+
+            // 결과 출력
+            let outputMessage = "";
+            switch (finalResult) {
+                case "맑음":
+                    outputMessage = "맑음, 작물 시트에 날씨 체크";
+                    break;
+                case "흐림":
+                    outputMessage = "흐림, 작물 시트에 날씨 체크, 해안가 조사 X";
+                    break;
+                case "비":
+                    outputMessage = "비, 작물 시트에 물 주기 체크, 동굴 조사 X";
+                    break;
+                case "번개":
+                    outputMessage = "번개, 작물 시트에 날씨 체크";
+                    break;
+                case "안개":
+                    outputMessage = "안개, 조사 불가능, 특정 스폿 공개";
+                    break;
+            }
+
+            // 결과 표시
+            document.getElementById("result").innerHTML = `
+                <h3>결과</h3>
+                <p>${outputMessage}</p>
+                <table>
+                    <tr>
+                        <th>날씨</th>
+                        <th>확률 (%)</th>
+                    </tr>
+                    ${Object.entries(resultProbabilities).map(([key, value]) => `
+                        <tr>
+                            <td>${key}</td>
+                            <td>${value}</td>
+                        </tr>
+                    `).join('')}
+                </table>
+            `;
+        }
+    </script>
+</head>
+<body>
+    <h1>날씨 계산기</h1>
+    <div>
+        <label for="day">날짜 선택:</label>
+        <select id="day">
+            <option value="2일차">2일차</option>
+            <option value="3일차">3일차</option>
+            <option value="4일차">4일차</option>
+            <option value="5일차">5일차</option>
+            <option value="6일차">6일차</option>
+            <option value="7일차">7일차</option>
+            <option value="8일차">8일차</option>
+            <option value="9일차">9일차</option>
+            <option value="10일차">10일차</option>
+        </select>
+    </div>
+    <div>
+        <h3>날씨 옵션 선택 (0~30)</h3>
+        <label for="sunny">맑음이:</label>
+        <input type="number" id="sunny" value="0" min="0" max="30"><br>
+        <label for="cloudy">흐림이:</label>
+        <input type="number" id="cloudy" value="0" min="0" max="30"><br>
+        <label for="drizzle">소낙이:</label>
+        <input type="number" id="drizzle" value="0" min="0" max="30"><br>
+        <label for="thunder">우릉이:</label>
+        <input type="number" id="thunder" value="0" min="0" max="30"><br>
+        <label for="fog">몽글이:</label>
+        <input type="number" id="fog" value="0" min="0" max="30"><br>
+    </div>
+    <button onclick="calculateWeather()">결과 계산</button>
+    <div id="result"></div>
+</body>
+</html>
