@@ -118,8 +118,9 @@
             });
 
             // 비료 및 영양제 값 계산
-            let nutrientSum = nutrientCount * 5;
-            let total = waterSum + weedSum + weatherSum + nutrientSum;
+            let nutrientSum = nutrientCount * 10;
+            let fertilizerSum = fertilizerCount * 5;
+            let total = waterSum + weedSum + weatherSum + nutrientSum + fertilizerSum;
 
             // 별 등급 및 피스 계산
             let stars, pieces;
@@ -199,7 +200,7 @@
             const dateTime = now.toLocaleString(); // "YYYY/MM/DD HH:MM:SS" 형식
 
             // 간단한 결괏값 출력
-            document.getElementById("result").innerText = `물주기 합계: ${waterSum}, 잡초뽑기 합계: ${weedSum}, 비료: ${fertilizerCount}, 영양제: ${nutrientSum}, 날씨 보너스: ${weatherSum}`;
+            document.getElementById("result").innerText = `물주기 합계: ${waterSum}, 잡초뽑기 합계: ${weedSum}, 비료: ${fertilizerSum}, 영양제: ${nutrientSum}, 날씨 보너스: ${weatherSum}`;
             document.getElementById("finalResult").innerText = `결과: ${stars}, 보상: ${pieces}피스`;
 
             // 산출 기록 저장
