@@ -65,10 +65,10 @@
             const baseValues = dayValues[day];
             let probabilities = {
                 "맑음": baseValues.base + sunnyCount,
-                "흐림": 15 + cloudyCount,
-                "비": 15 + drizzleCount,
-                "번개": 15 + thunderCount,
-                "안개": 15 + fogCount,
+                "흐림": baseValues.base + cloudyCount,
+                "비": baseValues.base + drizzleCount,
+                "번개": baseValues.base + thunderCount,
+                "안개": baseValues.base + fogCount,
             };
 
             const total = Object.values(probabilities).reduce((a, b) => a + b, 0);
